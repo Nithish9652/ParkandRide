@@ -10,7 +10,7 @@ function sigmoid(x: number): number {
 export function getOccupancyMultiplier(
   occupied: number,
   total: number,
-  threshold = 0.7
+  threshold = 0.4
 ): number {
   const occupancyRatio = occupied / total;
   const slope = 10;

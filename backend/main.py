@@ -20,20 +20,22 @@ from services.booking_service import service, BookingError
 
 app = FastAPI()
 
-# CORS (open for testing; tighten in production)
+# CORS setup (open for development)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # Replace with your frontend URL in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Auth routes
+# Include auth routes (login/register)
 app.include_router(auth_router)
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+# JWT decode dependency
 def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = decode_access_token(token)
@@ -42,6 +44,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         return payload["sub"]
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+# Booking endpoints
 
 @app.post("/book", response_model=SlotResponse)
 def book(req: BookingRequest, user: str = Depends(get_current_user)):
