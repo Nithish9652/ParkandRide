@@ -13,6 +13,10 @@ class UserLogin(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
 
+class UserProfile(BaseModel):
+    userId: EmailStr
+    loyaltyPoints: int
+
 # ——— Booking requests ———
 class BookingRequest(BaseModel):
     start: datetime

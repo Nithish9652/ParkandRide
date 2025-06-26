@@ -1,0 +1,7 @@
+.env
+.env.local
+node_modules
+yarn.lock
+.next
+.venv
+tsconfig.json
