@@ -15,8 +15,12 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+<<<<<<< HEAD
     "isolatedModules": true,
     "target": "ES2017"
+=======
+    "isolatedModules": true
+>>>>>>> ca826c0a90c60775cf0712d0b34d2388aed08405
   },
   "include": [
     "pages",

@@ -113,8 +113,12 @@ def list_routes():
 # 9) Root health-check
 @app.get("/", tags=["root"])
 async def read_root():
+<<<<<<< HEAD
     return {"message": "Welcome to Park & Ride API"}
 
 @app.get("/healthz")
 async def healthz():
     return {"status": "ok"}
+=======
+    return {"message": "Welcome to Park & Ride API"}
+>>>>>>> ca826c0a90c60775cf0712d0b34d2388aed08405

@@ -11,7 +11,11 @@
     "@stripe/stripe-js": "^7.4.0",
     "@zxing/browser": "^0.1.5",
     "html-to-image": "^1.11.13",
+<<<<<<< HEAD
     "next": "^15.5.3",
+=======
+    "next": "13.x",
+>>>>>>> ca826c0a90c60775cf0712d0b34d2388aed08405
     "react": "18.x",
     "react-dom": "18.x",
     "react-qr-code": "^2.0.16",
