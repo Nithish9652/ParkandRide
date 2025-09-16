@@ -1,0 +1,34 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+realtime.log
+
+# Virtual environment
+venv/
+env/
+.venv/
+
+# VSCode / Codespaces settings
+.vscode/
+.devcontainer/
+*.code-workspace
+
+# Python environment management
+pip-log.txt
+pip-delete-this-directory.txt
+poetry.lock
+
+# JWT secret keys or environment variables
+.env
+
+# OS-generated files
+.DS_Store
+Thumbs.db
+
+# Pytest / testing cache
+.pytest_cache/
+.cache/

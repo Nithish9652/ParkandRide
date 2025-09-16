@@ -1,0 +1,72 @@
+# ---- Python ------------------------------------
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# pytest
+.pytest_cache/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+
+# coverage
+htmlcov/
+.coverage
+.coverage.*
+
+# pip
+pip-wheel-metadata/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Local env file
+.env.local
+.env
+
+# ---- Node / Next.js ---------------------------
+# dependencies
+frontend/node_modules/
+
+# Next.js build output
+frontend/.next/
+frontend/out/
+
+# npm logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js local env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+
+# ---- Logs --------------------------------------
+*.log
+realtime.log
+
+# ---- IDEs / Editors ----------------------------
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ---- OS generated ------------------------------
+.DS_Store
+Thumbs.db
+
+# ---- Docker ------------------------------------
+# if you add Docker contexts or builds
+docker-compose.override.yml
