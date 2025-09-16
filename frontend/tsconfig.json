@@ -17,7 +17,6 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "target": "ES2017"
-    "isolatedModules": true
   },
   "include": [
     "pages",
