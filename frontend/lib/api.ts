@@ -1,68 +1,83 @@
-import useSWR, { KeyedMutator } from "swr";
+import useSWR, { KeyedMutator } from 'swr'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
-if (!API_URL) throw new Error("NEXT_PUBLIC_API_URL is not defined");
+const API_URL = process.env.NEXT_PUBLIC_API_URL
+if (!API_URL) {
+  throw new Error('NEXT_PUBLIC_API_URL is not defined')
+}
 
 // ---------------- Types ----------------
 
 export type BookingIn = {
-  start: string; // ISO format
-  hours: number;
-  days: number;
-  months: number;
-  plate: string;
-};
+  start: string // ISO format
+  hours: number
+  days: number
+  months: number
+  plate: string
+}
 
 export type BookingOut = {
-  slot: { row: number; col: number };
-  start: string;
-  end: string;
-  qr: string;
-};
+  slot: { row: number; col: number }
+  start: string
+  end: string
+  qr: string
+}
 
 export type CancelIn = {
-  row: number;
-  col: number;
-  start: string;
-  end: string;
-  plate: string;
-};
+  row: number
+  col: number
+  start: string
+  end: string
+  plate: string
+}
+
+// Add the Lot type for useLots
+export type Lot = {
+  id: string
+  name: string
+  // any other fields your API returns
+}
 
 // ---------------- Shared Fetcher ----------------
 
 async function fetcher<T = any>([url, token]: [string, string]): Promise<T> {
   const res = await fetch(url, {
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-  });
+  })
 
   if (!res.ok) {
-    const msg = await res.text();
-    throw new Error(msg);
+    const msg = await res.text()
+    throw new Error(msg)
   }
 
-  return res.json();
+  return res.json()
 }
 
 // ---------------- useOccupancy Hook ----------------
 
-export function useOccupancy(at: string, token: string | null) {
+export function useOccupancy(
+  at: string,
+  token: string | null
+): {
+  occupancy?: { occupied: number; total: number }
+  isLoading: boolean
+  isError?: Error
+  mutate: KeyedMutator<{ occupied: number; total: number }>
+} {
   const key = token
-    ? [`${API_URL}/occupancy?at=${encodeURIComponent(at)}`, token]
-    : null;
-  const { data, error, mutate } = useSWR<{ occupied: number; total: number }>(
-    key,
-    fetcher
-  );
+    ? ([`${API_URL}/occupancy?at=${encodeURIComponent(at)}`, token] as const)
+    : null
+
+  const { data, error, mutate } = useSWR(key, fetcher)
 
   return {
     occupancy: data,
     isLoading: !error && !data,
     isError: error as Error | undefined,
     mutate: mutate as KeyedMutator<{ occupied: number; total: number }>,
-  };
+  }
 }
 
 // ---------------- Book a Spot ----------------
@@ -72,22 +87,21 @@ export async function bookSpot(
   booking: BookingIn
 ): Promise<BookingOut> {
   const res = await fetch(`${API_URL}/book`, {
-    method: "POST",
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(booking),
-  });
+  })
 
-  const isJson = res.headers.get("Content-Type")?.includes("application/json");
-
+  const isJson = res.headers.get('Content-Type')?.includes('application/json')
   if (!res.ok) {
-    const error = isJson ? await res.json() : { detail: await res.text() };
-    throw new Error(error.detail || "Booking failed");
+    const err = isJson ? await res.json() : { detail: await res.text() }
+    throw new Error(err.detail || 'Booking failed')
   }
 
-  return await res.json();
+  return res.json()
 }
 
 // ---------------- Cancel a Spot ----------------
@@ -97,20 +111,41 @@ export async function cancelSpot(
   payload: CancelIn
 ): Promise<{ message: string }> {
   const res = await fetch(`${API_URL}/cancel`, {
-    method: "POST", // Backend expects POST
+    method: 'POST',
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
-  });
+  })
 
-  const isJson = res.headers.get("Content-Type")?.includes("application/json");
-
+  const isJson = res.headers.get('Content-Type')?.includes('application/json')
   if (!res.ok) {
-    const error = isJson ? await res.json() : { detail: await res.text() };
-    throw new Error(error.detail || "Cancellation failed");
+    const err = isJson ? await res.json() : { detail: await res.text() }
+    throw new Error(err.detail || 'Cancellation failed')
   }
 
-  return await res.json();
+  return res.json()
+}
+
+// ---------------- useLots Hook ----------------
+
+export function useLots(token: string | null): {
+  lots?: Lot[]
+  isLoading: boolean
+  isError?: Error
+  mutate: KeyedMutator<Lot[]>
+} {
+  const key = token
+    ? ([`${API_URL}/lots`, token] as const)
+    : null
+
+  const { data, error, mutate } = useSWR<Lot[]>(key, fetcher)
+
+  return {
+    lots: data,
+    isLoading: !error && !data,
+    isError: error as Error | undefined,
+    mutate: mutate as KeyedMutator<Lot[]>,
+  }
 }
