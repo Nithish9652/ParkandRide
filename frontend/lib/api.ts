@@ -30,11 +30,16 @@ export type CancelIn = {
   plate: string
 }
 
-// Add the Lot type for useLots
+// Updated Lot type to match API
 export type Lot = {
-  id: string
+  _id: string
   name: string
-  // any other fields your API returns
+  slots: Array<{
+    row: number
+    col: number
+    occupied: boolean
+  }>
+  // add any other fields returned by your API here
 }
 
 // ---------------- Shared Fetcher ----------------
@@ -130,16 +135,15 @@ export async function cancelSpot(
 
 // ---------------- useLots Hook ----------------
 
-export function useLots(token: string | null): {
+export function useLots(
+  token: string | null
+): {
   lots?: Lot[]
   isLoading: boolean
   isError?: Error
   mutate: KeyedMutator<Lot[]>
 } {
-  const key = token
-    ? ([`${API_URL}/lots`, token] as const)
-    : null
-
+  const key = token ? ([`${API_URL}/lots`, token] as const) : null
   const { data, error, mutate } = useSWR<Lot[]>(key, fetcher)
 
   return {
