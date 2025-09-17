@@ -1,3 +1,4 @@
+// frontend/lib/api.ts
 import useSWR, { KeyedMutator } from 'swr'
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL
@@ -8,7 +9,7 @@ if (!API_URL) {
 // ---------------- Types ----------------
 
 export type BookingIn = {
-  start: string // ISO format
+  start: string  // ISO format
   hours: number
   days: number
   months: number
@@ -30,16 +31,18 @@ export type CancelIn = {
   plate: string
 }
 
-// Updated Lot type to match API
+// A single slot in a lot, matching your page code
+export type Slot = {
+  slot_id: string
+  occupied: boolean
+}
+
+// A parking lot object, as returned by your backend
 export type Lot = {
   _id: string
   name: string
-  slots: Array<{
-    row: number
-    col: number
-    occupied: boolean
-  }>
-  // add any other fields returned by your API here
+  slots: Slot[]
+  // add any other fields your API returns here
 }
 
 // ---------------- Shared Fetcher ----------------
@@ -56,8 +59,27 @@ async function fetcher<T = any>([url, token]: [string, string]): Promise<T> {
     const msg = await res.text()
     throw new Error(msg)
   }
-
   return res.json()
+}
+
+// ---------------- useLots Hook ----------------
+// Fetch all lots for the current user
+export function useLots(
+  token: string | null
+): {
+  lots?: Lot[]
+  isLoading: boolean
+  isError?: Error
+  mutate: KeyedMutator<Lot[]>
+} {
+  const key = token ? ([`${API_URL}/lots`, token] as const) : null
+  const { data, error, mutate } = useSWR<Lot[]>(key, fetcher)
+  return {
+    lots: data,
+    isLoading: !error && !data,
+    isError: error as Error | undefined,
+    mutate: mutate as KeyedMutator<Lot[]>,
+  }
 }
 
 // ---------------- useOccupancy Hook ----------------
@@ -74,9 +96,7 @@ export function useOccupancy(
   const key = token
     ? ([`${API_URL}/occupancy?at=${encodeURIComponent(at)}`, token] as const)
     : null
-
   const { data, error, mutate } = useSWR(key, fetcher)
-
   return {
     occupancy: data,
     isLoading: !error && !data,
@@ -99,13 +119,11 @@ export async function bookSpot(
     },
     body: JSON.stringify(booking),
   })
-
   const isJson = res.headers.get('Content-Type')?.includes('application/json')
   if (!res.ok) {
     const err = isJson ? await res.json() : { detail: await res.text() }
     throw new Error(err.detail || 'Booking failed')
   }
-
   return res.json()
 }
 
@@ -123,33 +141,10 @@ export async function cancelSpot(
     },
     body: JSON.stringify(payload),
   })
-
   const isJson = res.headers.get('Content-Type')?.includes('application/json')
   if (!res.ok) {
     const err = isJson ? await res.json() : { detail: await res.text() }
     throw new Error(err.detail || 'Cancellation failed')
   }
-
   return res.json()
-}
-
-// ---------------- useLots Hook ----------------
-
-export function useLots(
-  token: string | null
-): {
-  lots?: Lot[]
-  isLoading: boolean
-  isError?: Error
-  mutate: KeyedMutator<Lot[]>
-} {
-  const key = token ? ([`${API_URL}/lots`, token] as const) : null
-  const { data, error, mutate } = useSWR<Lot[]>(key, fetcher)
-
-  return {
-    lots: data,
-    isLoading: !error && !data,
-    isError: error as Error | undefined,
-    mutate: mutate as KeyedMutator<Lot[]>,
-  }
 }
