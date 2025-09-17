@@ -41,7 +41,7 @@ export default function BookPage({ lotId }: BookPageProps) {
 
   // Booking handler
   async function book(slotId: string) {
-    if (!token) return
+    if (!token || !lot) return
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/bookings`,
