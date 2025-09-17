@@ -1,4 +1,5 @@
 // frontend/pages/book/[lotId].tsx
+
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { useLots, Lot } from '../../lib/api'
@@ -12,44 +13,55 @@ export default function BookPage({ lotId }: BookPageProps) {
   const [mounted, setMounted] = useState(false)
   const [token, setToken] = useState<string | null>(null)
 
+  // On mount, grab token and redirect if missing
   useEffect(() => {
     setMounted(true)
     const t = localStorage.getItem('token')
     setToken(t)
-    if (!t) router.replace('/login')
+    if (!t) {
+      router.replace('/login')
+    }
   }, [router])
 
-  const { lots = [], isLoading, isError } = useLots(token)
+  // only pass token into the hook once we're mounted
+  const { lots, isLoading, isError } = useLots(mounted ? token : null)
 
-  if (!mounted || !router.isReady) return null
-  if (!token) return null
+  if (!mounted) return null
+  if (!token) return null           // we’ll redirect to /login
   if (isLoading) return <p>Loading lots…</p>
   if (isError) return <p style={{ color: 'red' }}>{isError.message}</p>
+  if (!lots || lots.length === 0) return <p>No lots available</p>
 
-  const lot = (lots as Lot[]).find(l => l._id === lotId)
+  // Find our lot
+  const lot = lots.find(l => l._id === lotId)
   if (!lot) return <p>Lot not found</p>
 
+  // Filter free slots
   const freeSlots = lot.slots.filter(s => !s.occupied)
 
+  // Booking handler
   async function book(slotId: string) {
+    if (!token) return
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/bookings`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ lot_id: lot._id, slot_id: slotId })
-      })
-
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/bookings`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ lot_id: lot._id, slot_id: slotId }),
+        }
+      )
+      const data = await res.json().catch(() => null)
       if (!res.ok) {
-        const err = await res.json().catch(() => null)
-        return alert('Booking failed: ' + (err?.message || res.statusText))
+        alert('Booking failed: ' + (data?.message || res.statusText))
+      } else {
+        alert('Booked!')
+        router.push('/dashboard')
       }
-
-      alert('Booked!')
-      router.push('/dashboard')
-    } catch (err) {
+    } catch {
       alert('An error occurred during booking.')
     }
   }
@@ -73,10 +85,13 @@ export default function BookPage({ lotId }: BookPageProps) {
   )
 }
 
-export async function getServerSideProps(ctx: { params?: { lotId?: string } }) {
+// Pull lotId from the URL on the server
+export async function getServerSideProps(ctx: {
+  params?: { lotId?: string }
+}) {
   return {
     props: {
-      lotId: ctx.params?.lotId || ''
-    }
+      lotId: ctx.params?.lotId ?? '',
+    },
   }
 }
