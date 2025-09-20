@@ -6,11 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()  # loads MONGO_URI and optional MONGO_DB
 
-<<<<<<< HEAD
 MONGO_URI = os.environ["MONGO_URI"] 
-=======
 MONGO_URI = os.getenv("MONGO_URI")
->>>>>>> ca826c0a90c60775cf0712d0b34d2388aed08405
 if not MONGO_URI:
     raise RuntimeError("MONGO_URI must be set in .env")
 
